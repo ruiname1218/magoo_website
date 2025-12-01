@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { OrbitControls, Environment, Float, ContactShadows, ScrollControls, Scroll, useScroll } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import Magoo from './Magoo'
 
 function BackgroundElements() {
@@ -37,26 +37,54 @@ function BackgroundElements() {
 function MagooScene() {
     const scroll = useScroll()
     const magooRef = useRef()
+    const { width } = useThree((state) => state.viewport)
+    const isMobile = width < 10 // Increased threshold to cover tablets (iPad)
 
     useFrame((state, delta) => {
         const offset = scroll.offset
 
-        // Rotate Magoo based on scroll
-        // Page 1: Front facing
-        // Page 2: Rotated 180 degrees
-        // Page 3: Front facing again
-
         if (magooRef.current) {
             magooRef.current.rotation.y = Math.PI * 2 * offset
-            // Invert sine to move Left on Page 2 (offset ~0.33) where text is Right
-            magooRef.current.position.x = -Math.sin(offset * Math.PI * 2) * 2.5
+
+            if (isMobile) {
+                // Mobile: Less horizontal movement, keep centered
+                magooRef.current.position.x = 0
+                magooRef.current.position.y = -0.5 // Lower slightly
+            } else {
+                // Desktop: Move side to side
+                // Page 1 (0-0.25): Center -> Right
+                // Page 2 (0.25-0.5): Right -> Left
+                // Page 3 (0.5-0.75): Left -> Right (Video)
+                // Page 4 (0.75-1.0): Right -> Center
+
+                // Simple sine wave logic might need adjustment for 5 pages
+                // 5 pages = 4 intervals. 
+                // offset 0 = Page 1 start
+                // offset 0.25 = Page 2 start
+                // offset 0.5 = Page 3 start
+                // offset 0.75 = Page 4 start (Video)
+                // offset 1.0 = Page 5 start (CTA)
+
+                // Let's use a custom curve or just sine with adjusted frequency
+                // We want:
+                // P1: Center
+                // P2: Left (Text Right) -> x = -2.5
+                // P3: Center (Text Center) -> x = 0 (or maybe slightly off if text is wide)
+                // P4: Center (Video Center) -> x = 0 (Magoo behind or to side? Maybe side)
+                // Let's try moving him to the Right for Video page
+
+                // Increase amplitude to 3.5 to push him further out
+                // Adjusted for 7 pages (more spacing for mobile)
+                magooRef.current.position.x = -Math.sin(offset * Math.PI * 3) * 3.5
+                magooRef.current.position.y = -1
+            }
         }
     })
 
     return (
         <group ref={magooRef}>
             <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-                <Magoo position={[0, -1, 0]} scale={1.5} />
+                <Magoo position={[0, 0, 0]} scale={isMobile ? 1.2 : 1.5} />
             </Float>
         </group>
     )
@@ -78,49 +106,38 @@ export default function Experience() {
 
             <BackgroundElements />
 
-            <ScrollControls pages={4} damping={0.2}>
+            <ScrollControls pages={7} damping={0.2}>
                 {/* 3D Content */}
                 <MagooScene />
 
                 {/* HTML Content */}
                 <Scroll html style={{ width: '100%' }}>
                     {/* Page 1: Hero */}
-                    <section style={{ height: '100vh', display: 'flex', alignItems: 'center', paddingLeft: '10vw' }}>
-                        <div style={{ maxWidth: 600 }}>
-                            <h1 style={{ fontSize: '5rem', lineHeight: 1.1, marginBottom: 24, color: 'var(--color-text)', fontFamily: 'var(--font-heading)' }}>
+                    <section className="section-container">
+                        <div className="hero-content">
+                            <h1 className="hero-title">
                                 未来の相棒、<br />
                                 <span style={{ color: 'var(--color-primary)' }}>MAGOO</span>
                             </h1>
-                            <p style={{ fontSize: '1.25rem', color: 'var(--color-text)', opacity: 0.8, marginBottom: 32, fontWeight: 700 }}>
+                            <p className="hero-subtitle">
                                 レトロでポップなAIロボット。<br />あなたの孫がいつでもどこでも。
                             </p>
-                            <button style={{
-                                background: 'var(--color-text)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '16px 32px',
-                                borderRadius: '50px',
-                                fontSize: '1.25rem',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                fontFamily: 'var(--font-heading)',
-                                letterSpacing: '0.05em'
-                            }}>
+                            <button className="btn-secondary">
                                 もっと知る
                             </button>
                         </div>
-                        <div style={{ position: 'absolute', bottom: 32, right: 32, textAlign: 'right' }}>
+                        <div style={{ position: 'absolute', bottom: 32, right: 32, textAlign: 'right', display: 'none' }}>
                             <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)' }}>SCROLL TO EXPLORE</p>
                         </div>
                     </section>
 
                     {/* Page 2: Features */}
-                    <section style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '10vw' }}>
-                        <div style={{ maxWidth: 500, textAlign: 'right' }}>
-                            <h2 style={{ fontSize: '4rem', lineHeight: 1.1, marginBottom: 24, color: 'var(--color-secondary)', fontFamily: 'var(--font-heading)' }}>
+                    <section className="section-container features-section">
+                        <div className="hero-content">
+                            <h2 className="hero-title" style={{ color: 'var(--color-secondary)' }}>
                                 レトロ<br />フューチャー
                             </h2>
-                            <p style={{ fontSize: '1.25rem', color: 'var(--color-text)', opacity: 0.8, marginBottom: 32, fontWeight: 700 }}>
+                            <p className="hero-subtitle">
                                 懐かしいけど、新しい。<br />
                                 最先端AI搭載の雪だるまロボット。<br />
                                 Magooは、過去と未来をつなぐ架け橋です。
@@ -129,32 +146,18 @@ export default function Experience() {
                     </section>
 
                     {/* Page 3: Use Cases */}
-                    <section style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                        <h2 style={{ fontSize: '3.5rem', lineHeight: 1.1, marginBottom: 48, color: 'var(--color-text)', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>
+                    <section className="section-container usecase-section" style={{ marginBottom: '20vh' }}>
+                        <h2 className="usecase-title">
                             <span style={{ color: 'var(--color-accent)' }}>Magoo</span>のある生活
                         </h2>
-                        <div style={{ display: 'flex', gap: 32, justifyContent: 'center', flexWrap: 'wrap', padding: '0 20px' }}>
-                            <div style={{
-                                width: 400,
-                                background: 'white',
-                                padding: 16,
-                                borderRadius: 20,
-                                boxShadow: '8px 8px 0px var(--color-primary)',
-                                border: '4px solid var(--color-text)'
-                            }}>
+                        <div className="usecase-grid">
+                            <div className="usecase-card" style={{ boxShadow: '8px 8px 0px var(--color-primary)' }}>
                                 <img src="/images/usecase1.png" alt="Use Case 1" style={{ width: '100%', borderRadius: 12, border: '2px solid var(--color-text)' }} />
                                 <p style={{ marginTop: 16, fontWeight: 700, textAlign: 'center', color: 'var(--color-text)' }}>
                                     寂しい時も、<br />Magooがいてくれる。
                                 </p>
                             </div>
-                            <div style={{
-                                width: 400,
-                                background: 'white',
-                                padding: 16,
-                                borderRadius: 20,
-                                boxShadow: '8px 8px 0px var(--color-secondary)',
-                                border: '4px solid var(--color-text)'
-                            }}>
+                            <div className="usecase-card" style={{ boxShadow: '8px 8px 0px var(--color-secondary)' }}>
                                 <img src="/images/usecase2.png" alt="Use Case 2" style={{ width: '100%', borderRadius: 12, border: '2px solid var(--color-text)' }} />
                                 <p style={{ marginTop: 16, fontWeight: 700, textAlign: 'center', color: 'var(--color-text)' }}>
                                     まるで本当の孫のように。<br />AIだけど完璧じゃない。
@@ -163,25 +166,26 @@ export default function Experience() {
                         </div>
                     </section>
 
-                    {/* Page 4: CTA */}
-                    <section style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* Page 4: Video */}
+                    <section className="section-container video-section">
+                        <h2 className="usecase-title" style={{ fontSize: '3rem' }}>
+                            <span style={{ color: 'var(--color-primary)' }}>Magoo</span> とおしゃべり
+                        </h2>
+                        <div className="video-container">
+                            <video className="video-player" controls autoPlay loop muted playsInline>
+                                <source src="/videos/magoo_concept.mp4" type="video/mp4" />
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </section>
+
+                    {/* Page 5: CTA */}
+                    <section className="section-container cta-section">
                         <div style={{ textAlign: 'center' }}>
-                            <h2 style={{ fontSize: '4rem', lineHeight: 1.1, marginBottom: 24, color: 'var(--color-primary)', fontFamily: 'var(--font-heading)' }}>
+                            <h2 className="hero-title" style={{ color: 'var(--color-primary)' }}>
                                 準備はいい？
                             </h2>
-                            <button style={{
-                                background: 'var(--color-primary)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '20px 40px',
-                                borderRadius: '50px',
-                                fontSize: '1.8rem',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                boxShadow: '0 10px 30px rgba(255, 107, 107, 0.4)',
-                                fontFamily: 'var(--font-heading)',
-                                letterSpacing: '0.05em'
-                            }}>
+                            <button className="btn-primary" style={{ fontSize: '1.8rem' }}>
                                 Magooをお迎えする
                             </button>
                         </div>

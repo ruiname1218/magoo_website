@@ -8,22 +8,10 @@ export default function Overlay() {
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-text)' }}>
                     MAGOO
                 </div>
-                <nav style={{ display: 'flex', gap: 32 }}>
+                <nav className="header-nav">
                     <a href="#" style={{ textDecoration: 'none', color: 'var(--color-text)', fontWeight: 700 }}>機能</a>
                     <a href="#" style={{ textDecoration: 'none', color: 'var(--color-text)', fontWeight: 700 }}>Magooとは</a>
-                    <button style={{
-                        background: 'var(--color-primary)',
-                        border: 'none',
-                        padding: '12px 24px',
-                        borderRadius: '50px',
-                        color: 'white',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 14px rgba(255, 107, 107, 0.4)',
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: '1.1rem',
-                        letterSpacing: '0.05em'
-                    }}>
+                    <button className="btn-primary" style={{ fontSize: '1rem', padding: '10px 20px' }}>
                         予約する
                     </button>
                 </nav>
