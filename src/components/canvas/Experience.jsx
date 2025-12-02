@@ -185,9 +185,15 @@ export default function Experience() {
                             <h2 className="hero-title" style={{ color: 'var(--color-primary)' }}>
                                 準備はいい？
                             </h2>
-                            <button className="btn-primary" style={{ fontSize: '1.8rem' }}>
+                            <a
+                                href="https://github.com/ruiname1218/magoo_companion"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-primary"
+                                style={{ fontSize: '1.8rem', textDecoration: 'none', display: 'inline-block' }}
+                            >
                                 Magooをお迎えする
-                            </button>
+                            </a>
                         </div>
                     </section>
                 </Scroll>
